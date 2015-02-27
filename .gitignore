@@ -1,0 +1,10 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!*.cpp
+!CMakeLists.txt
+# etc...
+
+# ...even if they are in subdirectories
