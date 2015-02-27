@@ -244,14 +244,14 @@ void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt
   // Instantiate our custom point representation (defined above) ...
   MyPointRepresentation point_representation;
   // ... and weight the 'curvature' dimension so that it is balanced against x, y, and z
-  float alpha[4] = {1.0, 1.0, 1.0, 1.0};
+  float alpha[4] = {1.0, 1.0, 2.0, 1.0};
   point_representation.setRescaleValues (alpha);
 
   //
   // Align
   pcl::IterativeClosestPointNonLinear<PointNormalT, PointNormalT> reg;
-  reg.setTransformationEpsilon (1e-6);
-  // Set the maximum distance between two correspondences (src<->tgt) to 10cm
+  reg.setTransformationEpsilon (1e-2);
+  // Set the maximum distance between two correspondences (src<->tgt) to 50cm
   // Note: adjust this based on the size of your datasets
   reg.setMaxCorrespondenceDistance (0.5);  
   // Set the point representation
@@ -266,7 +266,7 @@ void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt
   // Run the same optimization in a loop and visualize the results
   Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity (), prev, targetToSource;
   PointCloudWithNormals::Ptr reg_result = points_with_normals_src;
-  reg.setMaximumIterations (5);
+  reg.setMaximumIterations (100);
   for (int i = 0; i < 30; ++i)
   {
     PCL_INFO ("Iteration Nr. %d.\n", i);
