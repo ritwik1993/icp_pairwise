@@ -15,7 +15,7 @@
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
  *   * Neither the name of Willow Garage, Inc. nor the names of its
- *     contributors may be used to endorse or promote products derived
+x *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -60,7 +60,7 @@ using pcl::visualization::PointCloudColorHandlerGenericField;
 using pcl::visualization::PointCloudColorHandlerCustom;
 
 //convenient typedefs
-typedef pcl::PointXYZ PointT;
+typedef pcl::PointXYZRGB PointT;
 typedef pcl::PointCloud<PointT> PointCloud;
 typedef pcl::PointNormal PointNormalT;
 typedef pcl::PointCloud<PointNormalT> PointCloudWithNormals;
@@ -213,6 +213,7 @@ void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt
     grid.setInputCloud (cloud_src);
     grid.filter (*src);
 
+
     grid.setInputCloud (cloud_tgt);
     grid.filter (*tgt);
   }
@@ -228,9 +229,9 @@ void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt
   PointCloudWithNormals::Ptr points_with_normals_tgt (new PointCloudWithNormals);
 
   pcl::NormalEstimation<PointT, PointNormalT> norm_est;
-  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ> ());
+  pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGB> ());
   norm_est.setSearchMethod (tree);
-  norm_est.setKSearch (30);
+  norm_est.setKSearch (3000);
   
   norm_est.setInputCloud (src);
   norm_est.compute (*points_with_normals_src);
@@ -250,10 +251,10 @@ void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt
   //
   // Align
   pcl::IterativeClosestPointNonLinear<PointNormalT, PointNormalT> reg;
-  reg.setTransformationEpsilon (1e-2);
+  reg.setTransformationEpsilon (1e-20);
   // Set the maximum distance between two correspondences (src<->tgt) to 50cm
   // Note: adjust this based on the size of your datasets
-  reg.setMaxCorrespondenceDistance (0.5);  
+  reg.setMaxCorrespondenceDistance (0.1);  
   // Set the point representation
   reg.setPointRepresentation (boost::make_shared<const MyPointRepresentation> (point_representation));
 
@@ -266,8 +267,8 @@ void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt
   // Run the same optimization in a loop and visualize the results
   Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity (), prev, targetToSource;
   PointCloudWithNormals::Ptr reg_result = points_with_normals_src;
-  reg.setMaximumIterations (100);
-  for (int i = 0; i < 30; ++i)
+  reg.setMaximumIterations (1000);
+  for (int i = 0; i < 500; ++i)
   {
     PCL_INFO ("Iteration Nr. %d.\n", i);
 
