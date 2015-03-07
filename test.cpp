@@ -245,7 +245,7 @@ void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt
   // Instantiate our custom point representation (defined above) ...
   MyPointRepresentation point_representation;
   // ... and weight the 'curvature' dimension so that it is balanced against x, y, and z
-  float alpha[4] = {1.0, 1.0, 1.0, 1.0};
+  float alpha[4] = {1.0, 1.0, 2.0, 1.0};
   point_representation.setRescaleValues (alpha);
 
   //
@@ -267,14 +267,14 @@ void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt
   // Run the same optimization in a loop and visualize the results
   Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity (), prev, targetToSource;
   PointCloudWithNormals::Ptr reg_result = points_with_normals_src;
-  reg.setMaximumIterations (10);
+  reg.setMaximumIterations (100);
   Eigen::Matrix4f guess;
-  guess << 0.707,0.707,0,0,
-                0.707,0.707,0,0,
+  guess << 1,0,0,0,
+                0,1,0,0,
                 0,0,1,0,
                 0,0,0,1;
   
-  for (int i = 0; i < 10; ++i)
+  for (int i = 0; i < 100; ++i)
   {
     PCL_INFO ("Iteration Nr. %d.\n", i);
 
