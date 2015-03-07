@@ -245,16 +245,16 @@ void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt
   // Instantiate our custom point representation (defined above) ...
   MyPointRepresentation point_representation;
   // ... and weight the 'curvature' dimension so that it is balanced against x, y, and z
-  float alpha[4] = {1.0, 1.0, 2.0, 1.0};
+  float alpha[4] = {1.0, 1.0, 1.0, 1.0};
   point_representation.setRescaleValues (alpha);
 
   //
   // Align
   pcl::IterativeClosestPointNonLinear<PointNormalT, PointNormalT> reg;
-  reg.setTransformationEpsilon (1e-20);
+  reg.setTransformationEpsilon (1e-6);
   // Set the maximum distance between two correspondences (src<->tgt) to 50cm
   // Note: adjust this based on the size of your datasets
-  reg.setMaxCorrespondenceDistance (0.1);  
+  reg.setMaxCorrespondenceDistance (0.5);  
   // Set the point representation
   reg.setPointRepresentation (boost::make_shared<const MyPointRepresentation> (point_representation));
 
@@ -267,8 +267,14 @@ void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt
   // Run the same optimization in a loop and visualize the results
   Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity (), prev, targetToSource;
   PointCloudWithNormals::Ptr reg_result = points_with_normals_src;
-  reg.setMaximumIterations (1000);
-  for (int i = 0; i < 500; ++i)
+  reg.setMaximumIterations (10);
+  Eigen::Matrix4f guess;
+  guess << 0.707,0.707,0,0,
+                0.707,0.707,0,0,
+                0,0,1,0,
+                0,0,0,1;
+  
+  for (int i = 0; i < 10; ++i)
   {
     PCL_INFO ("Iteration Nr. %d.\n", i);
 
@@ -277,7 +283,7 @@ void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt
 
     // Estimate
     reg.setInputSource (points_with_normals_src);
-    reg.align (*reg_result);
+    reg.align (*reg_result,guess);
 
 		//accumulate transformation between each Iteration
     Ti = reg.getFinalTransformation () * Ti;
